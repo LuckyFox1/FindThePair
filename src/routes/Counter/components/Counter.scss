@@ -1,0 +1,64 @@
+div {
+  margin: 0;
+}
+
+.image-container {
+  display: block;
+  border: 1px solid #c1c4c6;
+  margin: 1% 10%;
+  padding: 1%;
+  background-color: white;
+  -webkit-box-shadow: 2px 2px 10px 2px rgba(128,128,128,1);
+  -moz-box-shadow: 2px 2px 10px 2px rgba(128,128,128,1);
+  box-shadow: 2px 2px 10px 2px rgba(128,128,128,1);
+  img {
+    width: 23%;
+    height: 23%;
+    margin: 1%;
+    padding: 1%;
+    background-color: #ebebeb;
+    -webkit-box-shadow: 2px 2px 5px 0 rgba(199,199,199,1);
+    -moz-box-shadow: 2px 2px 5px 0 rgba(199,199,199,1);
+    box-shadow: 2px 2px 5px 0 rgba(199,199,199,1);
+  }
+}
+
+#root {
+  height: 100%;
+  min-width: 800px;
+  min-height: 970px;
+}
+
+.button {
+  background: #5ce825;
+  background-image: -webkit-linear-gradient(top, #5ce825, #d8de28);
+  background-image: -moz-linear-gradient(top, #5ce825, #d8de28);
+  background-image: -ms-linear-gradient(top, #5ce825, #d8de28);
+  background-image: -o-linear-gradient(top, #5ce825, #d8de28);
+  background-image: linear-gradient(to bottom, #5ce825, #d8de28);
+  width: 20%;
+  min-width: 70px;
+  display: inline-block;
+  -webkit-border-radius: 12px;
+  -moz-border-radius: 12px;
+  border-radius: 12px;
+  border-style: none;
+  -webkit-box-shadow: 1px 1px 3px #666666;
+  -moz-box-shadow: 1px 1px 3px #666666;
+  box-shadow: 1px 1px 3px #666666;
+  color: #666666;
+  padding: 0.7% 0;
+  margin: 1.5%;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.button:hover {
+  background: #46fc3c;
+  background-image: -webkit-linear-gradient(top, #46fc3c, #dfeb34);
+  background-image: -moz-linear-gradient(top, #46fc3c, #dfeb34);
+  background-image: -ms-linear-gradient(top, #46fc3c, #dfeb34);
+  background-image: -o-linear-gradient(top, #46fc3c, #dfeb34);
+  background-image: linear-gradient(to bottom, #46fc3c, #dfeb34);
+  text-decoration: none;
+}
