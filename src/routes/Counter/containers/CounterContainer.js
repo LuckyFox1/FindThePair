@@ -1,12 +1,12 @@
 import { connect } from 'react-redux'
-import { increment, doubleAsync, startGame } from '../modules/counter'
+import { startGame, tryAgain, compareImages } from '../modules/counter'
 
 import Counter from '../components/Counter'
 
 const mapDispatchToProps = {
-  increment : () => increment(1),
-  doubleAsync: () => doubleAsync(10),
-  startGame
+  startGame,
+  tryAgain,
+  compareImages
 }
 
 const mapStateToProps = (state) => ({
