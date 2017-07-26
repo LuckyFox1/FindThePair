@@ -1,22 +1,32 @@
 import React from 'react'
 import PropTypes from 'prop-types'
+import './Counter.scss'
 
-export const Counter = ({ counter2, increment, doubleAsync }) => (
-  <div style={{ margin: '0 auto' }} >
-    <h2>Counter2: {counter2}</h2>
-    <button className='btn btn-primary' onClick={increment}>
-      Increment
-    </button>
-    {' '}
-    <button className='btn btn-secondary' onClick={doubleAsync}>
-      Double (Async)
-    </button>
-  </div>
-)
+export class Counter extends React.Component {
+  render () {
+    const { applySettings } = this.props
+    return (
+      <div className='settings'>
+        <div className='delay-time'>
+          <p> Time for memorization (sec): </p>
+          <input type='number' min='1' max='20' />
+        </div>
+        <div className='game-time'>
+          <p> Game time (sec): </p>
+          <input type='number' min='10' max='180' />
+        </div>
+        <div className='amount-clicks'>
+          <p> Amount clicks: </p>
+          <input type='number' min='16' max='200' />
+        </div>
+        <button className='apply-settings button' onClick={applySettings}> Apply</button>
+      </div>
+    )
+  }
+}
+
 Counter.propTypes = {
-  counter2: PropTypes.number.isRequired,
-  increment: PropTypes.func.isRequired,
-  doubleAsync: PropTypes.func.isRequired,
+  applySettings: PropTypes.func.isRequired,
 }
 
 export default Counter

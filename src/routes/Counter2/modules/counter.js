@@ -1,54 +1,77 @@
 // ------------------------------------
 // Constants
 // ------------------------------------
-export const COUNTER_INCREMENT2 = 'COUNTER_INCREMENT2'
-export const COUNTER_DOUBLE_ASYNC2 = 'COUNTER_DOUBLE_ASYNC2'
+
+export const APPLY_SETTINGS = 'APPLY_SETTINGS'
+export const CHANGE_DELAY_TIME = 'CHANGE_DELAY_TIME'
+export const CHANGE_GAME_TIME = 'CHANGE_GAME_TIME'
+export const CHANGE_AMOUNT_CLICKS = 'CHANGE_AMOUNT_CLICKS'
 
 // ------------------------------------
 // Actions
 // ------------------------------------
-export function increment (value = 1) {
-  return {
-    type    : COUNTER_INCREMENT2,
-    payload : value
-  }
-}
 
-/*  This is a thunk, meaning it is a function that immediately
-    returns a function for lazy evaluation. It is incredibly useful for
-    creating async actions, especially when combined with redux-thunk! */
-
-export const doubleAsync = () => {
+export function applySettings (e) {
   return (dispatch, getState) => {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        dispatch({
-          type    : COUNTER_DOUBLE_ASYNC2,
-          payload : getState().counter2
-        })
-        resolve()
-      }, 200)
+    console.log(e)
+    dispatch({
+      type: APPLY_SETTINGS
     })
   }
 }
 
+export function changeDelayTime (e) {
+  return {
+    type: CHANGE_DELAY_TIME,
+    payload: e.target.value
+  }
+}
+
+export function changeGameTime (e) {
+  return {
+    type: CHANGE_GAME_TIME,
+    payload: e.target.value
+  }
+}
+
+export function changeAmountClicks (e) {
+  return {
+    type: CHANGE_AMOUNT_CLICKS,
+    payload: e.target.value
+  }
+}
+
 export const actions = {
-  increment,
-  doubleAsync
+  applySettings,
+  changeDelayTime,
+  changeGameTime,
+  changeAmountClicks
 }
 
 // ------------------------------------
 // Action Handlers
 // ------------------------------------
 const ACTION_HANDLERS = {
-  [COUNTER_INCREMENT2]    : (state, action) => state + action.payload,
-  [COUNTER_DOUBLE_ASYNC2] : (state, action) => state * 2
+  [CHANGE_DELAY_TIME]: (state, action) => {
+    if (action.payload > 9) {
+      return { ...state, timeDelay: action.payload }
+    } else {
+      return state
+    }
+  },
+  [APPLY_SETTINGS]: (state) => {
+        //
+  }
 }
 
 // ------------------------------------
 // Reducer
 // ------------------------------------
-const initialState = 0
+const initialState = {
+  timeDelay: 10000,
+  timeGame: 60000,
+  amountClicks: 100
+}
 export default function counterReducer (state = initialState, action) {
   const handler = ACTION_HANDLERS[action.type]
 

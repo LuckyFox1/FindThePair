@@ -10,8 +10,7 @@ import img8 from '../assets/8.png'
 // ------------------------------------
 // Constants
 // ------------------------------------
-export const COUNTER_INCREMENT = 'COUNTER_INCREMENT'
-export const COUNTER_DOUBLE_ASYNC = 'COUNTER_DOUBLE_ASYNC'
+export const DEC_COUNTER = 'DEC_COUNTER'
 export const START_GAME = 'START_GAME'
 export const TRY_AGAIN = 'TRY_AGAIN'
 export const CHANGE_GAME_STATUS = 'CHANGE_GAME_STATUS'
@@ -25,7 +24,13 @@ export const HIDDEN_IMAGES = 'HIDDEN_IMAGES'
 export const INC_TIMER = 'INC_TIMER'
 export const DEC_TIMER = 'DEC_TIMER'
 export const SET_TIME = 'SET_TIME'
-let timer
+export const CHECK_FIND_IMAGES = 'CHECK_FIND_IMAGES'
+export const LOOSE_GAME = 'LOOSE_GAME'
+export const RESET_GAME = 'RESET_GAME'
+export let timer
+export let timeout
+
+let canClick = false
 
 // ------------------------------------
 // Actions
@@ -35,6 +40,8 @@ export function startGame () {
   return (dispatch, getState) => {
     if (!getState().counter.isStarted) {
       clearInterval(timer)
+      clearTimeout(timeout)
+      canClick = false
       dispatch({
         type: START_GAME
       })
@@ -55,16 +62,25 @@ export function startGame () {
           })
         }
       }, 1000)
-      setTimeout(() => {
+      timeout = setTimeout(() => {
         dispatch({
           type: RESET_IMAGES_STATE
         })
+        canClick = true
         timer = setInterval(() => {
           dispatch({
             type: DEC_TIMER
           })
           if (getState().counter.timer === 0) {
             clearInterval(timer)
+            dispatch({
+              type: CHECK_FIND_IMAGES
+            })
+            if (!getState().counter.isWin) {
+              dispatch({
+                type: LOOSE_GAME
+              })
+            }
           }
         }, 1000)
       }, getState().counter.delayTime)
@@ -72,9 +88,11 @@ export function startGame () {
   }
 }
 
-export function tryAgain (value) {
+export function tryAgain () {
   return (dispatch, getState) => {
     clearInterval(timer)
+    clearTimeout(timeout)
+    canClick = false
     dispatch({
       type: MIX_IMAGES
     })
@@ -95,16 +113,25 @@ export function tryAgain (value) {
         })
       }
     }, 1000)
-    setTimeout(() => {
+    timeout = setTimeout(() => {
       dispatch({
         type: RESET_IMAGES_STATE
       })
+      canClick = true
       timer = setInterval(() => {
         dispatch({
           type: DEC_TIMER
         })
         if (getState().counter.timer === 0) {
           clearInterval(timer)
+          dispatch({
+            type: CHECK_FIND_IMAGES
+          })
+          if (!getState().counter.isWin) {
+            dispatch({
+              type: LOOSE_GAME
+            })
+          }
         }
       }, 1000)
     }, getState().counter.delayTime)
@@ -114,6 +141,17 @@ export function tryAgain (value) {
 export function compareImages (value, index) {
   return (dispatch, getState) => {
     if (getState().counter.amountChosenImages < 2 && getState().counter.isStarted) {
+      if (canClick) {
+        dispatch({
+          type: DEC_COUNTER
+        })
+        if (getState().counter.counter === 0) {
+          clearInterval(timer)
+          dispatch({
+            type: LOOSE_GAME
+          })
+        }
+      }
       dispatch({
         type: CHOOSE_IMAGE,
         payload: index
@@ -128,20 +166,37 @@ export function compareImages (value, index) {
           value: value,
           index: index
         })
+        dispatch({
+          type: CHECK_FIND_IMAGES
+        })
+        if (getState().counter.isWin) {
+          clearInterval(timer)
+        }
         setTimeout(() => {
           dispatch({
             type: HIDDEN_IMAGES
           })
-        }, 650)
+        }, 850)
       }
     }
+  }
+}
+
+export function resetGame () {
+  return (dispatch) => {
+    clearInterval(timer)
+    clearTimeout(timeout)
+    dispatch({
+      type: RESET_GAME
+    })
   }
 }
 
 export const actions = {
   startGame,
   tryAgain,
-  compareImages
+  compareImages,
+  resetGame
 }
 
 // ------------------------------------
@@ -149,13 +204,13 @@ export const actions = {
 // ------------------------------------
 
 const ACTION_HANDLERS = {
-  [COUNTER_INCREMENT]: (state, action) => ({ ...state, counter: state.counter + action.payload }),
-  [COUNTER_DOUBLE_ASYNC]: (state, action) => ({ ...state, counter: state.counter * 2 }),
+  [DEC_COUNTER]: (state, action) => ({...state, counter: state.counter - 1}),
   [START_GAME]: (state) => ({
     ...state,
     tryAgainIsActive: !state.tryAgainIsActive,
     startGameIsActive: !state.startGameIsActive,
     timer: state.delayTime,
+    counter: state.amountClicks,
     images: state.images
       .map((item) => ({
         ...item,
@@ -164,25 +219,28 @@ const ACTION_HANDLERS = {
       })
     )
   }),
-  [CHANGE_GAME_STATUS]: (state) => ({ ...state, isStarted: true }),
+  [CHANGE_GAME_STATUS]: (state) => ({...state, isStarted: true}),
   [MIX_IMAGES]: (state) => {
     let tempArr = state.images
     tempArr.sort(() => {
       return Math.random() - 0.5
     })
-    return { ...state, images: tempArr }
+    return {...state, images: tempArr}
   },
   [TRY_AGAIN]: (state) => ({
     ...state,
     startGameIsActive: false,
     tryAgainIsActive: true,
-    timer: state.delayTime
+    isLoose: false,
+    isWin: false,
+    timer: state.delayTime,
+    counter: state.amountClicks
   }),
   [CHOOSE_IMAGE]: (state, action) => ({
     ...state,
     images: state.images.map((item, index) => {
       if (index === action.payload && !item.wasFind) {
-        return { ...item, isDisplayed: !item.isChosen, isChosen: !item.isChosen }
+        return {...item, isDisplayed: !item.isChosen, isChosen: !item.isChosen}
       } else {
         return item
       }
@@ -231,9 +289,9 @@ const ACTION_HANDLERS = {
       ...state,
       images: state.images.map((item, index) => {
         if ((action.index === index || action.value.class === item.class) && isEqual) {
-          return { ...item, wasFind: true, isChosen: false, isDisplayed: false }
+          return {...item, wasFind: true, isChosen: false, isDisplayed: false}
         } else if (action.index === index && !isEqual) {
-          return { ...item, isChosen: true, isDisplayed: true }
+          return {...item, isChosen: true, isDisplayed: true}
         } else {
           return item
         }
@@ -245,7 +303,7 @@ const ACTION_HANDLERS = {
     amountChosenImages: 0,
     images: state.images.map((item) => {
       if (!item.wasFind) {
-        return { ...item, isChosen: false, isDisplayed: false }
+        return {...item, isChosen: false, isDisplayed: false}
       } else {
         return item
       }
@@ -262,7 +320,51 @@ const ACTION_HANDLERS = {
   [SET_TIME]: (state) => ({
     ...state,
     timer: state.gameTime
-  })
+  }),
+  [CHECK_FIND_IMAGES]: (state) => {
+    let key = true
+    state.images.map((item) => {
+      if (!item.wasFind) {
+        key = false
+      }
+    })
+    if (key) {
+      return {
+        ...state,
+        isWin: true
+      }
+    } else {
+      return state
+    }
+  },
+  [LOOSE_GAME]: (state) => ({
+    ...state,
+    isLoose: true
+  }),
+  [RESET_GAME]: (state) => {
+    return {
+      ...state,
+      counter: 0,
+      timer: 0,
+      delayTime: 5000,
+      gameTime: 120000,
+      amountClicks: 80,
+      isStarted: false,
+      tryAgainIsActive: false,
+      startGameIsActive: true,
+      amountChosenImages: 0,
+      isWin: false,
+      isLoose: false,
+      images: state.images.map((item) => {
+        return {
+          ...item,
+          isDisplayed: false,
+          isChosen: false,
+          wasFind: false
+        }
+      })
+    }
+  }
 }
 
 // ------------------------------------
@@ -271,14 +373,16 @@ const ACTION_HANDLERS = {
 
 const initialState = {
   counter: 0,
-  counter2: 0,
   timer: 0,
   delayTime: 5000,
   gameTime: 120000,
+  amountClicks: 80,
   isStarted: false,
   tryAgainIsActive: false,
   startGameIsActive: true,
   amountChosenImages: 0,
+  isWin: false,
+  isLoose: false,
   images: [
     {
       url: img1,
