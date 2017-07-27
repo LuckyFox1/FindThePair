@@ -60,7 +60,7 @@ export const actions = {
 // ------------------------------------
 const ACTION_HANDLERS = {
   [CHANGE_DELAY_TIME]: (state, action) => {
-    if (action.payload > 4 && action.payload <= 30) {
+    if (action.payload > 2 && action.payload <= 30) {
       return { ...state, timeDelay: Math.floor(action.payload) * 1000 }
     } else {
       return state
@@ -99,12 +99,14 @@ const ACTION_HANDLERS = {
 // ------------------------------------
 // Reducer
 // ------------------------------------
+
 const initialState = {
   timeDelay: 10000,
   timeGame: 60000,
   amountClicks: 100,
   isApply: false
 }
+
 export default function counterReducer (state = initialState, action) {
   const handler = ACTION_HANDLERS[action.type]
 

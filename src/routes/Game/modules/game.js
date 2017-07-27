@@ -28,9 +28,9 @@ export const SET_TIME = 'SET_TIME'
 export const CHECK_FIND_IMAGES = 'CHECK_FIND_IMAGES'
 export const LOOSE_GAME = 'LOOSE_GAME'
 export const RESET_GAME = 'RESET_GAME'
-export let timer
-export let timeout
 
+let timer
+let timeout
 let canClick = false
 
 // ------------------------------------
@@ -40,7 +40,7 @@ let canClick = false
 export function startGame () {
   return (dispatch, getState) => {
     if (!getState().game.isStarted) {
-      clearInterval(timer)
+      clearTimeout(timer)
       clearTimeout(timeout)
       canClick = false
       dispatch({
@@ -56,48 +56,14 @@ export function startGame () {
       dispatch({
         type: CHANGE_GAME_STATUS
       })
-      timer = setInterval(() => {
-        dispatch({
-          type: DEC_TIMER
-        })
-        if (getState().game.timer === 0) {
-          clearInterval(timer)
-          dispatch({
-            type: SET_TIME,
-            payload: getState().settings && getState().settings.isApply
-              ? getState().settings.timeGame : getState().game.gameTime
-          })
-        }
-      }, 1000)
-      timeout = setTimeout(() => {
-        dispatch({
-          type: RESET_IMAGES_STATE
-        })
-        canClick = true
-        timer = setInterval(() => {
-          dispatch({
-            type: DEC_TIMER
-          })
-          if (getState().game.timer === 0) {
-            clearInterval(timer)
-            dispatch({
-              type: CHECK_FIND_IMAGES
-            })
-            if (!getState().game.isWin) {
-              dispatch({
-                type: LOOSE_GAME
-              })
-            }
-          }
-        }, 1000)
-      }, getState().game.delayTime)
+      startTimer(dispatch, getState)
     }
   }
 }
 
 export function tryAgain () {
   return (dispatch, getState) => {
-    clearInterval(timer)
+    clearTimeout(timer)
     clearTimeout(timeout)
     canClick = false
     dispatch({
@@ -113,41 +79,7 @@ export function tryAgain () {
       payload2: getState().settings && getState().settings.isApply
         ? getState().settings.amountClicks : getState().game.amountClicks
     })
-    timer = setInterval(() => {
-      dispatch({
-        type: DEC_TIMER
-      })
-      if (getState().game.timer === 0) {
-        clearInterval(timer)
-        dispatch({
-          type: SET_TIME,
-          payload: getState().settings && getState().settings.isApply
-            ? getState().settings.timeGame : getState().game.gameTime
-        })
-      }
-    }, 1000)
-    timeout = setTimeout(() => {
-      dispatch({
-        type: RESET_IMAGES_STATE
-      })
-      canClick = true
-      timer = setInterval(() => {
-        dispatch({
-          type: DEC_TIMER
-        })
-        if (getState().game.timer === 0) {
-          clearInterval(timer)
-          dispatch({
-            type: CHECK_FIND_IMAGES
-          })
-          if (!getState().game.isWin) {
-            dispatch({
-              type: LOOSE_GAME
-            })
-          }
-        }
-      }, 1000)
-    }, getState().game.delayTime)
+    startTimer(dispatch, getState)
   }
 }
 
@@ -159,7 +91,7 @@ export function compareImages (value, index) {
           type: DEC_COUNTER
         })
         if (getState().game.counter === 0) {
-          clearInterval(timer)
+          clearTimeout(timer)
           dispatch({
             type: LOOSE_GAME
           })
@@ -183,7 +115,7 @@ export function compareImages (value, index) {
           type: CHECK_FIND_IMAGES
         })
         if (getState().game.isWin) {
-          clearInterval(timer)
+          clearTimeout(timer)
         }
         setTimeout(() => {
           dispatch({
@@ -197,12 +129,52 @@ export function compareImages (value, index) {
 
 export function resetGame () {
   return (dispatch) => {
-    clearInterval(timer)
+    clearTimeout(timer)
     clearTimeout(timeout)
     dispatch({
       type: RESET_GAME
     })
   }
+}
+
+function startTimer (dispatch, getState) {
+  timer = setTimeout(function tick () {
+    dispatch({
+      type: DEC_TIMER
+    })
+    timer = setTimeout(tick, 1000)
+    if (getState().game.timer === 0) {
+      clearTimeout(timer)
+      dispatch({
+        type: SET_TIME,
+        payload: getState().settings && getState().settings.isApply
+          ? getState().settings.timeGame : getState().game.gameTime
+      })
+    }
+  }, 1000)
+  timeout = setTimeout(() => {
+    dispatch({
+      type: RESET_IMAGES_STATE
+    })
+    canClick = true
+    timer = setTimeout(function tick () {
+      dispatch({
+        type: DEC_TIMER
+      })
+      timer = setTimeout(tick, 1000)
+      if (getState().game.timer === 0) {
+        clearTimeout(timer)
+        dispatch({
+          type: CHECK_FIND_IMAGES
+        })
+        if (!getState().game.isWin) {
+          dispatch({
+            type: LOOSE_GAME
+          })
+        }
+      }
+    }, 1000)
+  }, getState().game.delayTime)
 }
 
 export const actions = {
@@ -362,9 +334,9 @@ const ACTION_HANDLERS = {
       ...state,
       counter: 0,
       timer: 0,
-      delayTime: 5000,
-      gameTime: 120000,
-      amountClicks: 80,
+      delayTime: 10000,
+      gameTime: 60000,
+      amountClicks: 100,
       isStarted: false,
       tryAgainIsActive: false,
       startGameIsActive: true,
