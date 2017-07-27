@@ -6,11 +6,11 @@ import img5 from '../assets/5.png'
 import img6 from '../assets/6.png'
 import img7 from '../assets/7.png'
 import img8 from '../assets/8.png'
-import { CHANGE_DELAY_TIME } from '../../Counter2/modules/counter'
 
 // ------------------------------------
 // Constants
 // ------------------------------------
+
 export const DEC_COUNTER = 'DEC_COUNTER'
 export const START_GAME = 'START_GAME'
 export const TRY_AGAIN = 'TRY_AGAIN'
@@ -39,16 +39,16 @@ let canClick = false
 
 export function startGame () {
   return (dispatch, getState) => {
-    if (!getState().counter.isStarted) {
+    if (!getState().game.isStarted) {
       clearInterval(timer)
       clearTimeout(timeout)
       canClick = false
       dispatch({
         type: START_GAME,
-        payload: getState().counter2 && getState().counter2.isApply
-          ? getState().counter2.timeDelay : getState().counter.delayTime,
-        payload2: getState().counter2 && getState().counter2.isApply
-          ? getState().counter2.amountClicks : getState().counter.amountClicks
+        payload: getState().settings && getState().settings.isApply
+          ? getState().settings.timeDelay : getState().game.delayTime,
+        payload2: getState().settings && getState().settings.isApply
+          ? getState().settings.amountClicks : getState().game.amountClicks
       })
       dispatch({
         type: MIX_IMAGES
@@ -60,12 +60,12 @@ export function startGame () {
         dispatch({
           type: DEC_TIMER
         })
-        if (getState().counter.timer === 0) {
+        if (getState().game.timer === 0) {
           clearInterval(timer)
           dispatch({
             type: SET_TIME,
-            payload: getState().counter2 && getState().counter2.isApply
-              ? getState().counter2.timeGame : getState().counter.gameTime
+            payload: getState().settings && getState().settings.isApply
+              ? getState().settings.timeGame : getState().game.gameTime
           })
         }
       }, 1000)
@@ -78,19 +78,19 @@ export function startGame () {
           dispatch({
             type: DEC_TIMER
           })
-          if (getState().counter.timer === 0) {
+          if (getState().game.timer === 0) {
             clearInterval(timer)
             dispatch({
               type: CHECK_FIND_IMAGES
             })
-            if (!getState().counter.isWin) {
+            if (!getState().game.isWin) {
               dispatch({
                 type: LOOSE_GAME
               })
             }
           }
         }, 1000)
-      }, getState().counter.delayTime)
+      }, getState().game.delayTime)
     }
   }
 }
@@ -108,21 +108,21 @@ export function tryAgain () {
     })
     dispatch({
       type: TRY_AGAIN,
-      payload: getState().counter2 && getState().counter2.isApply
-        ? getState().counter2.timeDelay : getState().counter.delayTime,
-      payload2: getState().counter2 && getState().counter2.isApply
-        ? getState().counter2.amountClicks : getState().counter.amountClicks
+      payload: getState().settings && getState().settings.isApply
+        ? getState().settings.timeDelay : getState().game.delayTime,
+      payload2: getState().settings && getState().settings.isApply
+        ? getState().settings.amountClicks : getState().game.amountClicks
     })
     timer = setInterval(() => {
       dispatch({
         type: DEC_TIMER
       })
-      if (getState().counter.timer === 0) {
+      if (getState().game.timer === 0) {
         clearInterval(timer)
         dispatch({
           type: SET_TIME,
-          payload: getState().counter2 && getState().counter2.isApply
-            ? getState().counter2.timeGame : getState().counter.gameTime
+          payload: getState().settings && getState().settings.isApply
+            ? getState().settings.timeGame : getState().game.gameTime
         })
       }
     }, 1000)
@@ -135,30 +135,30 @@ export function tryAgain () {
         dispatch({
           type: DEC_TIMER
         })
-        if (getState().counter.timer === 0) {
+        if (getState().game.timer === 0) {
           clearInterval(timer)
           dispatch({
             type: CHECK_FIND_IMAGES
           })
-          if (!getState().counter.isWin) {
+          if (!getState().game.isWin) {
             dispatch({
               type: LOOSE_GAME
             })
           }
         }
       }, 1000)
-    }, getState().counter.delayTime)
+    }, getState().game.delayTime)
   }
 }
 
 export function compareImages (value, index) {
   return (dispatch, getState) => {
-    if (getState().counter.amountChosenImages < 2 && getState().counter.isStarted) {
+    if (getState().game.amountChosenImages < 2 && getState().game.isStarted) {
       if (canClick) {
         dispatch({
           type: DEC_COUNTER
         })
-        if (getState().counter.counter === 0) {
+        if (getState().game.counter === 0) {
           clearInterval(timer)
           dispatch({
             type: LOOSE_GAME
@@ -173,7 +173,7 @@ export function compareImages (value, index) {
         type: COUNT_CHOSEN,
         payload: value
       })
-      if (getState().counter.amountChosenImages === 2) {
+      if (getState().game.amountChosenImages === 2) {
         dispatch({
           type: COMPARE_IMAGES,
           value: value,
@@ -182,7 +182,7 @@ export function compareImages (value, index) {
         dispatch({
           type: CHECK_FIND_IMAGES
         })
-        if (getState().counter.isWin) {
+        if (getState().game.isWin) {
           clearInterval(timer)
         }
         setTimeout(() => {
@@ -390,9 +390,9 @@ const ACTION_HANDLERS = {
 const initialState = {
   counter: 0,
   timer: 0,
-  delayTime: 5000,
-  gameTime: 120000,
-  amountClicks: 80,
+  delayTime: 10000,
+  gameTime: 60000,
+  amountClicks: 100,
   isStarted: false,
   tryAgainIsActive: false,
   startGameIsActive: true,

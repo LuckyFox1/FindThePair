@@ -12,8 +12,8 @@ export const RESET_SETTINGS = 'RESET_SETTINGS'
 // Actions
 // ------------------------------------
 
-export function applySettings (e) {
-  return (dispatch, getState) => {
+export function applySettings () {
+  return (dispatch) => {
     dispatch({
       type: APPLY_SETTINGS
     })
@@ -37,7 +37,7 @@ export function changeGameTime (e) {
 export function changeAmountClicks (e) {
   return {
     type: CHANGE_AMOUNT_CLICKS,
-    payload: e.target.value
+    payload: +e.target.value
   }
 }
 
@@ -61,21 +61,21 @@ export const actions = {
 const ACTION_HANDLERS = {
   [CHANGE_DELAY_TIME]: (state, action) => {
     if (action.payload > 4 && action.payload <= 30) {
-      return { ...state, timeDelay: action.payload * 1000 }
+      return { ...state, timeDelay: Math.floor(action.payload) * 1000 }
     } else {
       return state
     }
   },
   [CHANGE_GAME_TIME]: (state, action) => {
     if (action.payload > 19 && action.payload < 120) {
-      return { ...state, timeGame: action.payload * 1000 }
+      return { ...state, timeGame: Math.floor(action.payload) * 1000 }
     } else {
       return state
     }
   },
   [CHANGE_AMOUNT_CLICKS]: (state, action) => {
     if (action.payload > 15 && action.payload <= 200) {
-      return { ...state, amountClicks: +action.payload }
+      return { ...state, amountClicks: Math.floor(action.payload) }
     } else {
       return state
     }

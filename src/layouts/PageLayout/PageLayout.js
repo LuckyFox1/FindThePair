@@ -7,7 +7,7 @@ export const PageLayout = ({ children }) => (
   <div className='container'>
     <div className='header'>
       <IndexLink to='/' className='game-link link' activeClassName='page-layout__nav-item--active'>Game</IndexLink>
-      <Link to='/counter2' className='settings-link link' activeClassName='page-layout__nav-item--active'>
+      <Link to='/settings' className='settings-link link' activeClassName='page-layout__nav-item--active'>
         Settings
       </Link>
     </div>

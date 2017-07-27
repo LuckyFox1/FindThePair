@@ -40,7 +40,6 @@
     text-decoration: none;
   }
 
-
   .apply-settings:disabled,
   .apply-settings[disabled] {
     background: #5ad151;
@@ -61,6 +60,7 @@
     -moz-box-shadow: 2px 2px 5px 0 rgba(199,199,199,1);
     box-shadow: 2px 2px 5px 0 rgba(199,199,199,1);
     border-radius: 7px;
+    padding: 4px;
   }
 
   input {
@@ -71,5 +71,5 @@
 #root {
   height: 100%;
   min-width: 800px;
-  min-height: 970px;
+  min-height: 1070px;
 }
