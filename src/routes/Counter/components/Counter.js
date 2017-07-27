@@ -5,7 +5,6 @@ import './Counter.scss'
 export class Counter extends React.Component {
   constructor (props) {
     super(props)
-    console.log('construct')
     this.props.resetGame()
   }
   render () {

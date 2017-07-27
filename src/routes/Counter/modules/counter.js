@@ -6,6 +6,7 @@ import img5 from '../assets/5.png'
 import img6 from '../assets/6.png'
 import img7 from '../assets/7.png'
 import img8 from '../assets/8.png'
+import { CHANGE_DELAY_TIME } from '../../Counter2/modules/counter'
 
 // ------------------------------------
 // Constants
@@ -43,7 +44,11 @@ export function startGame () {
       clearTimeout(timeout)
       canClick = false
       dispatch({
-        type: START_GAME
+        type: START_GAME,
+        payload: getState().counter2 && getState().counter2.isApply
+          ? getState().counter2.timeDelay : getState().counter.delayTime,
+        payload2: getState().counter2 && getState().counter2.isApply
+          ? getState().counter2.amountClicks : getState().counter.amountClicks
       })
       dispatch({
         type: MIX_IMAGES
@@ -58,7 +63,9 @@ export function startGame () {
         if (getState().counter.timer === 0) {
           clearInterval(timer)
           dispatch({
-            type: SET_TIME
+            type: SET_TIME,
+            payload: getState().counter2 && getState().counter2.isApply
+              ? getState().counter2.timeGame : getState().counter.gameTime
           })
         }
       }, 1000)
@@ -100,7 +107,11 @@ export function tryAgain () {
       type: SHOW_IMAGES
     })
     dispatch({
-      type: TRY_AGAIN
+      type: TRY_AGAIN,
+      payload: getState().counter2 && getState().counter2.isApply
+        ? getState().counter2.timeDelay : getState().counter.delayTime,
+      payload2: getState().counter2 && getState().counter2.isApply
+        ? getState().counter2.amountClicks : getState().counter.amountClicks
     })
     timer = setInterval(() => {
       dispatch({
@@ -109,7 +120,9 @@ export function tryAgain () {
       if (getState().counter.timer === 0) {
         clearInterval(timer)
         dispatch({
-          type: SET_TIME
+          type: SET_TIME,
+          payload: getState().counter2 && getState().counter2.isApply
+            ? getState().counter2.timeGame : getState().counter.gameTime
         })
       }
     }, 1000)
@@ -204,13 +217,14 @@ export const actions = {
 // ------------------------------------
 
 const ACTION_HANDLERS = {
-  [DEC_COUNTER]: (state, action) => ({...state, counter: state.counter - 1}),
-  [START_GAME]: (state) => ({
+  [DEC_COUNTER]: (state, action) => ({ ...state, counter: state.counter - 1 }),
+  [START_GAME]: (state, action) => ({
     ...state,
     tryAgainIsActive: !state.tryAgainIsActive,
     startGameIsActive: !state.startGameIsActive,
-    timer: state.delayTime,
-    counter: state.amountClicks,
+    timer: action.payload,
+    delayTime: action.payload,
+    counter: action.payload2,
     images: state.images
       .map((item) => ({
         ...item,
@@ -219,7 +233,7 @@ const ACTION_HANDLERS = {
       })
     )
   }),
-  [CHANGE_GAME_STATUS]: (state) => ({...state, isStarted: true}),
+  [CHANGE_GAME_STATUS]: (state) => ({ ...state, isStarted: true }),
   [MIX_IMAGES]: (state) => {
     let tempArr = state.images
     tempArr.sort(() => {
@@ -227,14 +241,15 @@ const ACTION_HANDLERS = {
     })
     return {...state, images: tempArr}
   },
-  [TRY_AGAIN]: (state) => ({
+  [TRY_AGAIN]: (state, action) => ({
     ...state,
     startGameIsActive: false,
     tryAgainIsActive: true,
     isLoose: false,
     isWin: false,
-    timer: state.delayTime,
-    counter: state.amountClicks
+    timer: action.payload,
+    delayTime: action.payload,
+    counter: action.payload2
   }),
   [CHOOSE_IMAGE]: (state, action) => ({
     ...state,
@@ -317,9 +332,10 @@ const ACTION_HANDLERS = {
     ...state,
     timer: state.timer - 1000
   }),
-  [SET_TIME]: (state) => ({
+  [SET_TIME]: (state, action) => ({
     ...state,
-    timer: state.gameTime
+    timer: action.payload,
+    gameTime: action.payload
   }),
   [CHECK_FIND_IMAGES]: (state) => {
     let key = true
