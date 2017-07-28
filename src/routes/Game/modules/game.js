@@ -197,6 +197,7 @@ const ACTION_HANDLERS = {
     timer: action.payload,
     delayTime: action.payload,
     counter: action.payload2,
+    amountClicks: action.payload2,
     images: state.images
       .map((item) => ({
         ...item,
@@ -221,7 +222,8 @@ const ACTION_HANDLERS = {
     isWin: false,
     timer: action.payload,
     delayTime: action.payload,
-    counter: action.payload2
+    counter: action.payload2,
+    amountClicks: action.payload2
   }),
   [CHOOSE_IMAGE]: (state, action) => ({
     ...state,
