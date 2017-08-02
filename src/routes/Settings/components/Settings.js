@@ -13,20 +13,23 @@ export class Settings extends React.Component {
     return (
       <div className='settings'>
         <div className='delay-time'>
-          <p> Time for memorization (sec): </p>
+          <label> Time for memorization (sec): </label>
           <input type='number'
-            value={settings.timeDelay / 1000}
+            name='delayTime'
+            value={settings.delayTime / 1000}
             onChange={changeDelayTime} />
         </div>
         <div className='game-time'>
-          <p> Game time (sec): </p>
+          <label> Game time (sec): </label>
           <input type='number'
-            value={settings.timeGame / 1000}
+            name='gameTime'
+            value={settings.gameTime / 1000}
             onChange={changeGameTime} />
         </div>
         <div className='amount-clicks'>
-          <p> Amount clicks: </p>
+          <label> Amount clicks: </label>
           <input type='number'
+            name='amountClicks'
             value={settings.amountClicks}
             onChange={changeAmountClicks} />
         </div>

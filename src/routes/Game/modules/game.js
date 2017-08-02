@@ -1,12 +1,3 @@
-import img1 from '../assets/1.png'
-import img2 from '../assets/2.png'
-import img3 from '../assets/3.png'
-import img4 from '../assets/4.png'
-import img5 from '../assets/5.png'
-import img6 from '../assets/6.png'
-import img7 from '../assets/7.png'
-import img8 from '../assets/8.png'
-
 // ------------------------------------
 // Constants
 // ------------------------------------
@@ -28,28 +19,56 @@ export const SET_TIME = 'SET_TIME'
 export const CHECK_FIND_IMAGES = 'CHECK_FIND_IMAGES'
 export const LOOSE_GAME = 'LOOSE_GAME'
 export const RESET_GAME = 'RESET_GAME'
+export const WIN_GAME = 'WIN_GAME'
+
+const AMOUNT_IMAGES = 8
+const DELAY_BEFORE_HIDE_IMAGES = 850
+const COUNT_SAME_IMAGES = 2
+const INTERVAL_TIMER_TICKS = 1000
 
 let timer
-let timeout
-let canClick = false
+let beforeStartTimeout
+let images = []
+
+for (let i = 1; i <= AMOUNT_IMAGES; i++) {
+  images.push({
+    url: require(`../assets/${i}.png`),
+    isDisplayed: false,
+    class: i + '',
+    isChosen: false,
+    wasFind: false
+  })
+}
 
 // ------------------------------------
 // Actions
 // ------------------------------------
+/*
+const beginGame = (delayTime, amountClicks) => ({
+  type: START_GAME,
+  delayTime,
+  amountClicks
+})
+*/
 
 export function startGame () {
   return (dispatch, getState) => {
     if (!getState().game.isStarted) {
-      clearTimeout(timer)
-      clearTimeout(timeout)
-      canClick = false
+      clearInterval(timer)
+      clearTimeout(beforeStartTimeout)
+      let settings = getState().settings
+      let game = getState().game
+      let delayTime = settings && settings.isApply ? settings.delayTime : game.delayTime
+      let amountClicks = settings && settings.isApply ? settings.amountClicks : game.amountClicks
+
       dispatch({
         type: START_GAME,
-        payload: getState().settings && getState().settings.isApply
-          ? getState().settings.timeDelay : getState().game.delayTime,
-        payload2: getState().settings && getState().settings.isApply
-          ? getState().settings.amountClicks : getState().game.amountClicks
+        delayTime,
+        amountClicks
       })
+
+      // beginGame(delayTime, amountClicks)
+
       dispatch({
         type: MIX_IMAGES
       })
@@ -63,21 +82,23 @@ export function startGame () {
 
 export function tryAgain () {
   return (dispatch, getState) => {
-    clearTimeout(timer)
-    clearTimeout(timeout)
-    canClick = false
+    clearInterval(timer)
+    clearTimeout(beforeStartTimeout)
     dispatch({
       type: MIX_IMAGES
     })
     dispatch({
       type: SHOW_IMAGES
     })
+    let settings = getState().settings
+    let game = getState().game
+    let delayTime = settings && settings.isApply ? settings.delayTime : game.delayTime
+    let amountClicks = settings && settings.isApply ? settings.amountClicks : game.amountClicks
+
     dispatch({
       type: TRY_AGAIN,
-      payload: getState().settings && getState().settings.isApply
-        ? getState().settings.timeDelay : getState().game.delayTime,
-      payload2: getState().settings && getState().settings.isApply
-        ? getState().settings.amountClicks : getState().game.amountClicks
+      delayTime,
+      amountClicks
     })
     startTimer(dispatch, getState)
   }
@@ -85,95 +106,105 @@ export function tryAgain () {
 
 export function compareImages (value, index) {
   return (dispatch, getState) => {
-    if (getState().game.amountChosenImages < 2 && getState().game.isStarted) {
-      if (canClick) {
+    let game = getState().game
+    if (game.amountChosenImages < COUNT_SAME_IMAGES && game.isStarted && game.canClick) {
+      dispatch({
+        type: DEC_COUNTER
+      })
+      if (getState().game.counter === 0) {
+        clearInterval(timer)
         dispatch({
-          type: DEC_COUNTER
+          type: LOOSE_GAME
         })
-        if (getState().game.counter === 0) {
-          clearTimeout(timer)
-          dispatch({
-            type: LOOSE_GAME
-          })
-        }
       }
       dispatch({
         type: CHOOSE_IMAGE,
-        payload: index
+        index
       })
       dispatch({
-        type: COUNT_CHOSEN,
-        payload: value
+        type: COUNT_CHOSEN
       })
-      if (getState().game.amountChosenImages === 2) {
+      if (getState().game.amountChosenImages === COUNT_SAME_IMAGES) {
         dispatch({
           type: COMPARE_IMAGES,
-          value: value,
-          index: index
+          value,
+          index
         })
         dispatch({
           type: CHECK_FIND_IMAGES
         })
-        if (getState().game.isWin) {
-          clearTimeout(timer)
+        if (getState().game.allFind) {
+          clearInterval(timer)
+          dispatch({
+            type: WIN_GAME
+          })
         }
         setTimeout(() => {
           dispatch({
             type: HIDDEN_IMAGES
           })
-        }, 850)
+        }, DELAY_BEFORE_HIDE_IMAGES)
       }
     }
   }
 }
 
 export function resetGame () {
-  return (dispatch) => {
-    clearTimeout(timer)
-    clearTimeout(timeout)
+  return (dispatch, getState) => {
+    clearInterval(timer)
+    clearTimeout(beforeStartTimeout)
+    let settings = getState().settings
+    let game = getState().game
+    let delayTime = settings && settings.isApply ? settings.delayTime : game.delayTime
+    let gameTime = settings && settings.isApply ? settings.gameTime : game.gameTime
+    let amountClicks = settings && settings.isApply ? settings.amountClicks : game.amountClicks
     dispatch({
-      type: RESET_GAME
+      type: RESET_GAME,
+      delayTime,
+      gameTime,
+      amountClicks
     })
+    clearInterval(timer)
   }
 }
 
 function startTimer (dispatch, getState) {
-  timer = setTimeout(function tick () {
+  timer = setInterval(function () {
     dispatch({
       type: DEC_TIMER
     })
-    timer = setTimeout(tick, 1000)
     if (getState().game.timer === 0) {
-      clearTimeout(timer)
+      clearInterval(timer)
+      let settings = getState().settings
+      let game = getState().game
+      let gameTime = settings && settings.isApply ? settings.gameTime : game.gameTime
+
       dispatch({
         type: SET_TIME,
-        payload: getState().settings && getState().settings.isApply
-          ? getState().settings.timeGame : getState().game.gameTime
+        gameTime
       })
     }
-  }, 1000)
-  timeout = setTimeout(() => {
+  }, INTERVAL_TIMER_TICKS)
+  beforeStartTimeout = setTimeout(() => {
     dispatch({
       type: RESET_IMAGES_STATE
     })
-    canClick = true
-    timer = setTimeout(function tick () {
+    timer = setInterval(function () {
       dispatch({
         type: DEC_TIMER
       })
-      timer = setTimeout(tick, 1000)
       if (getState().game.timer === 0) {
-        clearTimeout(timer)
+        clearInterval(timer)
         dispatch({
           type: CHECK_FIND_IMAGES
         })
-        if (!getState().game.isWin) {
+        if (!getState().game.allFind) {
           dispatch({
             type: LOOSE_GAME
           })
         }
       }
-    }, 1000)
+    }, INTERVAL_TIMER_TICKS)
   }, getState().game.delayTime)
 }
 
@@ -194,10 +225,11 @@ const ACTION_HANDLERS = {
     ...state,
     tryAgainIsActive: !state.tryAgainIsActive,
     startGameIsActive: !state.startGameIsActive,
-    timer: action.payload,
-    delayTime: action.payload,
-    counter: action.payload2,
-    amountClicks: action.payload2,
+    timer: action.delayTime,
+    delayTime: action.delayTime,
+    counter: action.amountClicks,
+    amountClicks: action.amountClicks,
+    canClick: false,
     images: state.images
       .map((item) => ({
         ...item,
@@ -212,7 +244,7 @@ const ACTION_HANDLERS = {
     tempArr.sort(() => {
       return Math.random() - 0.5
     })
-    return {...state, images: tempArr}
+    return { ...state, images: tempArr }
   },
   [TRY_AGAIN]: (state, action) => ({
     ...state,
@@ -220,23 +252,28 @@ const ACTION_HANDLERS = {
     tryAgainIsActive: true,
     isLoose: false,
     isWin: false,
-    timer: action.payload,
-    delayTime: action.payload,
-    counter: action.payload2,
-    amountClicks: action.payload2
+    timer: action.delayTime,
+    delayTime: action.delayTime,
+    counter: action.amountClicks,
+    amountClicks: action.amountClicks,
+    canClick: false,
   }),
   [CHOOSE_IMAGE]: (state, action) => ({
     ...state,
     images: state.images.map((item, index) => {
-      if (index === action.payload && !item.wasFind) {
-        return {...item, isDisplayed: !item.isChosen, isChosen: !item.isChosen}
-      } else {
-        return item
+      if (index === action.index && !item.wasFind) {
+        return {
+          ...item,
+          isDisplayed: !item.isChosen,
+          isChosen: !item.isChosen
+        }
       }
+      return item
     })
   }),
   [RESET_IMAGES_STATE]: (state) => ({
     ...state,
+    canClick: true,
     images: state.images.map((item) => {
       return {
         ...item,
@@ -253,7 +290,7 @@ const ACTION_HANDLERS = {
       isDisplayed: true
     }))
   }),
-  [COUNT_CHOSEN]: (state, action) => {
+  [COUNT_CHOSEN]: (state) => {
     let amount = 0
     state.images.map((item) => {
       if (item.isChosen === true) {
@@ -278,9 +315,9 @@ const ACTION_HANDLERS = {
       ...state,
       images: state.images.map((item, index) => {
         if ((action.index === index || action.value.class === item.class) && isEqual) {
-          return {...item, wasFind: true, isChosen: false, isDisplayed: false}
+          return { ...item, wasFind: true, isChosen: false, isDisplayed: false }
         } else if (action.index === index && !isEqual) {
-          return {...item, isChosen: true, isDisplayed: true}
+          return { ...item, isChosen: true, isDisplayed: true }
         } else {
           return item
         }
@@ -308,8 +345,8 @@ const ACTION_HANDLERS = {
   }),
   [SET_TIME]: (state, action) => ({
     ...state,
-    timer: action.payload,
-    gameTime: action.payload
+    timer: action.gameTime,
+    gameTime: action.gameTime
   }),
   [CHECK_FIND_IMAGES]: (state) => {
     let key = true
@@ -318,33 +355,39 @@ const ACTION_HANDLERS = {
         key = false
       }
     })
+
     if (key) {
       return {
         ...state,
-        isWin: true
+        allFind: true
       }
     } else {
       return state
     }
   },
+  [WIN_GAME]: (state) => ({
+    ...state,
+    isWin: true
+  }),
   [LOOSE_GAME]: (state) => ({
     ...state,
     isLoose: true
   }),
-  [RESET_GAME]: (state) => {
+  [RESET_GAME]: (state, action) => {
     return {
       ...state,
       counter: 0,
       timer: 0,
-      delayTime: 10000,
-      gameTime: 60000,
-      amountClicks: 100,
+      delayTime: action.delayTime,
+      gameTime: action.gameTime,
+      amountClicks: action.amountClicks,
       isStarted: false,
       tryAgainIsActive: false,
       startGameIsActive: true,
       amountChosenImages: 0,
       isWin: false,
       isLoose: false,
+      allFind: false,
       images: state.images.map((item) => {
         return {
           ...item,
@@ -373,123 +416,12 @@ const initialState = {
   amountChosenImages: 0,
   isWin: false,
   isLoose: false,
-  images: [
-    {
-      url: img1,
-      isDisplayed: false,
-      class: '1',
-      isChosen: false,
-      wasFind: false
-    },
-    {
-      url: img2,
-      isDisplayed: false,
-      class: '2',
-      isChosen: false,
-      wasFind: false
-    },
-    {
-      url: img3,
-      isDisplayed: false,
-      class: '3',
-      isChosen: false,
-      wasFind: false
-    },
-    {
-      url: img4,
-      isDisplayed: false,
-      class: '4',
-      isChosen: false,
-      wasFind: false
-    },
-    {
-      url: img5,
-      isDisplayed: false,
-      class: '5',
-      isChosen: false,
-      wasFind: false
-    },
-    {
-      url: img6,
-      isDisplayed: false,
-      class: '6',
-      isChosen: false,
-      wasFind: false
-    },
-    {
-      url: img7,
-      isDisplayed: false,
-      class: '7',
-      isChosen: false,
-      wasFind: false
-    },
-    {
-      url: img8,
-      isDisplayed: false,
-      class: '8',
-      isChosen: false,
-      wasFind: false
-    },
-    {
-      url: img1,
-      isDisplayed: false,
-      class: '1',
-      isChosen: false,
-      wasFind: false
-    },
-    {
-      url: img2,
-      isDisplayed: false,
-      class: '2',
-      isChosen: false,
-      wasFind: false
-    },
-    {
-      url: img3,
-      isDisplayed: false,
-      class: '3',
-      isChosen: false,
-      wasFind: false
-    },
-    {
-      url: img4,
-      isDisplayed: false,
-      class: '4',
-      isChosen: false,
-      wasFind: false
-    },
-    {
-      url: img5,
-      isDisplayed: false,
-      class: '5',
-      isChosen: false,
-      wasFind: false
-    },
-    {
-      url: img6,
-      isDisplayed: false,
-      class: '6',
-      isChosen: false,
-      wasFind: false
-    },
-    {
-      url: img7,
-      isDisplayed: false,
-      class: '7',
-      isChosen: false,
-      wasFind: false
-    },
-    {
-      url: img8,
-      isDisplayed: false,
-      class: '8',
-      isChosen: false,
-      wasFind: false
-    }
-  ]
+  canClick: false,
+  allFind: false,
+  images: images.concat(images)
 }
 
-export default function counterReducer (state = initialState, action) {
+export default function gameReducer (state = initialState, action) {
   const handler = ACTION_HANDLERS[action.type]
 
   return handler ? handler(state, action) : state

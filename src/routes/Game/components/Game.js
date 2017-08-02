@@ -5,13 +5,15 @@ import './Game.scss'
 export class Game extends React.Component {
   constructor (props) {
     super(props)
-    this.props.resetGame()
+    if (!this.props.settings || this.props.settings.isApply) {
+      this.props.resetGame()
+    }
   }
   render () {
     const { game, startGame, tryAgain, compareImages } = this.props
     return (
-      <div>
-        <div>
+      <div className='game'>
+        <div className='helpers'>
           <div className='timer'> <span>&#9200;</span> Timer: {game.timer / 1000} sec</div>
           <div className='counter'> Clicks: {game.counter} </div>
         </div>
@@ -42,7 +44,8 @@ Game.propTypes = {
   startGame: PropTypes.func.isRequired,
   tryAgain: PropTypes.func.isRequired,
   compareImages: PropTypes.func.isRequired,
-  resetGame: PropTypes.func.isRequired
+  resetGame: PropTypes.func.isRequired,
+  settings: PropTypes.object.isRequired
 }
 
 export default Game

@@ -8,6 +8,16 @@ export const CHANGE_GAME_TIME = 'CHANGE_GAME_TIME'
 export const CHANGE_AMOUNT_CLICKS = 'CHANGE_AMOUNT_CLICKS'
 export const RESET_SETTINGS = 'RESET_SETTINGS'
 
+const DEFAULT_DELAY_TIME = 10000
+const MIN_DELAY_TIME = 2
+const MAX_DELAY_TIME = 30
+const DEFAULT_GAME_TIME = 60000
+const MIN_GAME_TIME = 19
+const MAX_GAME_TIME = 120
+const DEFAULT_AMOUNT_CLICKS = 100
+const MIN_AMOUNT_CLICKS = 15
+const MAX_AMOUNT_CLICKS = 200
+
 // ------------------------------------
 // Actions
 // ------------------------------------
@@ -23,21 +33,21 @@ export function applySettings () {
 export function changeDelayTime (e) {
   return {
     type: CHANGE_DELAY_TIME,
-    payload: e.target.value
+    delayTime: e.target.value
   }
 }
 
 export function changeGameTime (e) {
   return {
     type: CHANGE_GAME_TIME,
-    payload: e.target.value
+    gameTime: e.target.value
   }
 }
 
 export function changeAmountClicks (e) {
   return {
     type: CHANGE_AMOUNT_CLICKS,
-    payload: +e.target.value
+    amountClicks: +e.target.value
   }
 }
 
@@ -60,38 +70,38 @@ export const actions = {
 // ------------------------------------
 const ACTION_HANDLERS = {
   [CHANGE_DELAY_TIME]: (state, action) => {
-    if (action.payload > 2 && action.payload <= 30) {
-      return { ...state, timeDelay: Math.floor(action.payload) * 1000 }
+    if (action.delayTime > MIN_DELAY_TIME && action.delayTime <= MAX_DELAY_TIME) {
+      return { ...state, delayTime: Math.floor(action.delayTime) * 1000 }
     } else {
       return state
     }
   },
   [CHANGE_GAME_TIME]: (state, action) => {
-    if (action.payload > 19 && action.payload < 120) {
-      return { ...state, timeGame: Math.floor(action.payload) * 1000 }
+    if (action.gameTime > MIN_GAME_TIME && action.gameTime < MAX_GAME_TIME) {
+      return { ...state, gameTime: Math.floor(action.gameTime) * 1000 }
     } else {
       return state
     }
   },
   [CHANGE_AMOUNT_CLICKS]: (state, action) => {
-    if (action.payload > 15 && action.payload <= 200) {
-      return { ...state, amountClicks: Math.floor(action.payload) }
+    if (action.amountClicks > MIN_AMOUNT_CLICKS && action.amountClicks <= MAX_AMOUNT_CLICKS) {
+      return { ...state, amountClicks: Math.floor(action.amountClicks) }
     } else {
       return state
     }
   },
   [APPLY_SETTINGS]: (state) => ({
     ...state,
-    timeDelay: state.timeDelay,
+    delayTime: state.delayTime,
     timeGame: state.timeGame,
     amountClicks: state.amountClicks,
     isApply: true
   }),
   [RESET_SETTINGS]: (state) => ({
     ...state,
-    timeDelay: 10000,
-    timeGame: 60000,
-    amountClicks: 100,
+    // delayTime: DEFAULT_DELAY_TIME,
+    // gameTime: DEFAULT_GAME_TIME,
+    // amountClicks: DEFAULT_AMOUNT_CLICKS,
     isApply: false
   })
 }
@@ -101,13 +111,13 @@ const ACTION_HANDLERS = {
 // ------------------------------------
 
 const initialState = {
-  timeDelay: 10000,
-  timeGame: 60000,
-  amountClicks: 100,
+  delayTime: DEFAULT_DELAY_TIME,
+  gameTime: DEFAULT_GAME_TIME,
+  amountClicks: DEFAULT_AMOUNT_CLICKS,
   isApply: false
 }
 
-export default function counterReducer (state = initialState, action) {
+export default function settingsReducer (state = initialState, action) {
   const handler = ACTION_HANDLERS[action.type]
 
   return handler ? handler(state, action) : state
