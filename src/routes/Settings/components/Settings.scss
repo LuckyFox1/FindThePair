@@ -64,6 +64,11 @@
     padding: 4px;
   }
 
+  input[readonly] {
+    background-color: #eaeaea;
+    color: #808080;
+  }
+
   input {
     outline: none;
   }

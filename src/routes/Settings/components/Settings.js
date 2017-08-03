@@ -16,6 +16,7 @@ export class Settings extends React.Component {
           <label> Time for memorization (sec): </label>
           <input type='number'
             name='delayTime'
+            readOnly={!this.props.game ? false : !this.props.game.enableSettings}
             value={settings.delayTime / 1000}
             onChange={changeDelayTime} />
         </div>
@@ -23,6 +24,7 @@ export class Settings extends React.Component {
           <label> Game time (sec): </label>
           <input type='number'
             name='gameTime'
+            readOnly={!this.props.game ? false : !this.props.game.enableSettings}
             value={settings.gameTime / 1000}
             onChange={changeGameTime} />
         </div>
@@ -30,11 +32,16 @@ export class Settings extends React.Component {
           <label> Amount clicks: </label>
           <input type='number'
             name='amountClicks'
+            readOnly={!this.props.game ? false : !this.props.game.enableSettings}
             value={settings.amountClicks}
             onChange={changeAmountClicks} />
         </div>
         <Link to='/'>
-          <button className='apply-settings button' onClick={applySettings}> Apply</button>
+          <button className='apply-settings button'
+            disabled={!this.props.game ? false : !this.props.game.enableSettings}
+            onClick={applySettings}>
+            Apply
+          </button>
         </Link>
       </div>
     )
@@ -47,7 +54,8 @@ Settings.propTypes = {
   changeGameTime: PropTypes.func.isRequired,
   changeAmountClicks: PropTypes.func.isRequired,
   resetSettings: PropTypes.func.isRequired,
-  settings: PropTypes.object.isRequired
+  settings: PropTypes.object.isRequired,
+  game: PropTypes.object.isRequired
 }
 
 export default Settings
